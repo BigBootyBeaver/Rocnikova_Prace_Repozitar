@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://crrathf0bh5h3"]
+
+[ext_resource type="Script" uid="uid://1sug8g0sj2yf" path="res://Skripty/Simulace.cs" id="1_wfi7u"]
+
+[node name="Simulace" type="Node2D" unique_id=701797203]
+script = ExtResource("1_wfi7u")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=176289895]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=256045638]
