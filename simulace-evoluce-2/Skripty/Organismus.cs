@@ -7,11 +7,42 @@ public partial class Organismus : GodotObject
 	public int X { get; set; }
 	public int Y { get; set; }
 	
+	private double _energie;
 	// --- Aktuální stav (mění se každé kolo) ---
-	public double Energie { get; set; } // Peníze v hotovosti (ATP)
+	public double Energie // Peníze v hotovosti (ATP)
+	{ 
+		get 
+		{
+			return _energie;
+		}
+		set 
+		{
+			if (value < 0.0)
+			{
+				_energie = 0.0;
+			}
+			else
+			{
+				_energie = value;
+			}
+		}
+	}
 	public double Hmotnost { get; set; } // Velikost těla. Když dosáhne limitu, organismus se rozdělí.
 	public int Vek { get; set; } 
-	
+	public bool JeMrtvy
+	{
+		get
+		{
+			if (Energie == 0.0 || Vek >= GenMaxVek)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
 	// --- GENETICKÝ KÓD (Evoluční vlastnosti - dědí se a mutují) ---
 	public double GenMiraFotosyntezy { get; set; } = 1;      // Jak moc efektivně mění světlo na hmotu/energii
 	public double GenMiraAbsorbce { get; set; } = 0;            // Jak efektivně tráví ostatní políčka (dravost)
@@ -41,30 +72,35 @@ public partial class Organismus : GodotObject
 
 }
 
-public partial class Organismus :GodotObject 
+public partial class Organismus : GodotObject 
 {
 	// --- METODY PRO SIMULACI ---
 	/// <summary>
 	/// Řasa nasává světlo z okolí a dělá z něj novou energii.
 	/// </summary>
+	
+	public void ZijJednoKolo(SimulationWorld world) // poznámka bacha na pojmenování inntenzita světla pro přehlednost (je to na víc místech jako vnitřní parametr funkce).
+	{
+		Vek++;
+		// Organismus sám ví, kde stojí, a zeptá se světa na světlo na této pozici
+		double intenzitaSvetlaLokal = world.GetLightIntensity(this.X, this.Y);
+		Fotosyntetizuj(intenzitaSvetlaLokal);
+		Energie -= MiraMetabolismu;
+		
+	}
+	 
+	
+	/// <summary>
+	/// Volá se každé herní kolo (tick). Organismus zaplatí daň za život a zestárne.
+	/// </summary>
 	public void Fotosyntetizuj(double intenzitaSvetla)
 	{
-		// Světlo se mění na fyzickou hmotnost těla
-		double ziskanaEnergie = intenzitaSvetla * GenMiraFotosyntezy * 0.5;
+		
+		double ziskanaEnergie = intenzitaSvetla * GenMiraFotosyntezy;
 		Energie += ziskanaEnergie;
 		GD.Print($"Zisk fotosyntezy: {ziskanaEnergie}");
 	}
 
-	/// <summary>
-	/// Volá se každé herní kolo (tick). Organismus zaplatí daň za život a zestárne.
-	/// </summary>
-	public void ZijJednoKolo(double intenzitaSvetla) // poznámka bacha na pojmenování inntenzita světla pro přehlednost (je to na víc místech jako vnitřní parametr funkce).
-	{
-		Vek++;
-		Fotosyntetizuj(intenzitaSvetla);
-		Energie -= MiraMetabolismu;
-		
-	}
 
 	/// <summary>
 	/// Pokud se organismus v tomto kole rozhodne pohnout, zavolá se tato metoda.
